@@ -32,8 +32,8 @@ public class User implements Serializable {
     private Date joinDate;
     private String[] roles;
     private String[] authorities;
-    private boolean isActive;
-    private boolean isNotLocked;
+    private boolean isEnabled;
+    private boolean isNonLocked;
 
     @Override
     public boolean equals(Object o) {
