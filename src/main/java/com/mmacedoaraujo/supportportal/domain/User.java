@@ -16,7 +16,6 @@ import java.util.Objects;
 @NoArgsConstructor
 @Table(name = "users_tb")
 public class User implements Serializable {
-
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(nullable = false, updatable = false)
