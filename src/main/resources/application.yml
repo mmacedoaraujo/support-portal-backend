@@ -3,7 +3,7 @@ server:
 
 spring:
   datasource:
-    url: jdbc:mysql://localhost:3306/supportportal?createIfNotExist=true&
+    url: jdbc:mysql://localhost:3307/supportportal?createDatabaseIfNotExist=true&
     password: root
     username: root
   jpa:
