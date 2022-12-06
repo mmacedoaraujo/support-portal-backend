@@ -1,13 +1,10 @@
 package com.mmacedoaraujo.supportportal.filter;
 
-import com.google.common.net.HttpHeaders;
 import com.mmacedoaraujo.supportportal.utility.JWTTokenProvider;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import lombok.AllArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -19,26 +16,32 @@ import java.util.List;
 
 import static com.mmacedoaraujo.supportportal.constant.SecurityConstant.OPTIONS_HTTP_METHOD;
 import static com.mmacedoaraujo.supportportal.constant.SecurityConstant.TOKEN_PREFIX;
+import static org.springframework.http.HttpHeaders.AUTHORIZATION;
+import static org.springframework.http.HttpStatus.OK;
 
-@AllArgsConstructor
+
 @Component
 public class JWTAuthorizationFilter extends OncePerRequestFilter {
 
-    private final JWTTokenProvider jwtTokenProvider;
+    private JWTTokenProvider jwtTokenProvider;
+
+    public JWTAuthorizationFilter(JWTTokenProvider jwtTokenProvider) {
+        this.jwtTokenProvider = jwtTokenProvider;
+    }
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        if (request.getMethod().equals(OPTIONS_HTTP_METHOD)) {
-            response.setStatus(HttpStatus.OK.value());
+        if (request.getMethod().equalsIgnoreCase(OPTIONS_HTTP_METHOD)) {
+            response.setStatus(OK.value());
         } else {
-            String authorizationHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
+            String authorizationHeader = request.getHeader(AUTHORIZATION);
             if (authorizationHeader == null || !authorizationHeader.startsWith(TOKEN_PREFIX)) {
                 filterChain.doFilter(request, response);
                 return;
             }
             String token = authorizationHeader.substring(TOKEN_PREFIX.length());
             String username = jwtTokenProvider.getSubject(token);
-            if (jwtTokenProvider.isTokenValid(username, token)) {
+            if (jwtTokenProvider.isTokenValid(username, token) && SecurityContextHolder.getContext().getAuthentication() == null) {
                 List<GrantedAuthority> authorities = jwtTokenProvider.getAuthorities(token);
                 Authentication authentication = jwtTokenProvider.getAuthentication(username, authorities, request);
                 SecurityContextHolder.getContext().setAuthentication(authentication);

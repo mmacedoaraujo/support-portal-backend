@@ -22,7 +22,6 @@ import java.util.stream.Collectors;
 
 import static com.auth0.jwt.algorithms.Algorithm.HMAC512;
 import static com.mmacedoaraujo.supportportal.constant.SecurityConstant.*;
-import static java.time.Instant.now;
 import static java.util.Arrays.stream;
 
 @Component
@@ -36,10 +35,10 @@ public class JWTTokenProvider {
         return JWT.create()
                 .withIssuer(MMACEDOARAUJO_LLC)
                 .withAudience(MMACEDOARAUJO_ADMINISTRATION)
-                .withIssuedAt(now())
+                .withIssuedAt(new Date())
                 .withSubject(userPrincipal.getUsername())
                 .withArrayClaim(AUTHORITIES, claims)
-                .withExpiresAt(now().plusMillis(EXPIRATION_TIME))
+                .withExpiresAt(new Date(System.currentTimeMillis() + EXPIRATION_TIME))
                 .sign(HMAC512(secret.getBytes()));
     }
 
