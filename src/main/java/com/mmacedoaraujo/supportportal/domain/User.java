@@ -1,9 +1,9 @@
 package com.mmacedoaraujo.supportportal.domain;
 
-import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.Hibernate;
 
+import javax.persistence.*;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.Objects;

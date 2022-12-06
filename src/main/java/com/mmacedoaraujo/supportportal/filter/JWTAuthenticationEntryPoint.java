@@ -2,8 +2,8 @@ package com.mmacedoaraujo.supportportal.filter;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mmacedoaraujo.supportportal.domain.HttpResponse;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.authentication.Http403ForbiddenEntryPoint;

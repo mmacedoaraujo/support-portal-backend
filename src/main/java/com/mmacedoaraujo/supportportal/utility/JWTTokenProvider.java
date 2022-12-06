@@ -5,8 +5,7 @@ import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.mmacedoaraujo.supportportal.domain.UserPrincipal;
-import io.micrometer.common.util.StringUtils;
-import jakarta.servlet.http.HttpServletRequest;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -15,6 +14,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -32,14 +32,7 @@ public class JWTTokenProvider {
 
     public String generateJwtToken(UserPrincipal userPrincipal) {
         String[] claims = getClaimsFromUser(userPrincipal);
-        return JWT.create()
-                .withIssuer(MMACEDOARAUJO_LLC)
-                .withAudience(MMACEDOARAUJO_ADMINISTRATION)
-                .withIssuedAt(new Date())
-                .withSubject(userPrincipal.getUsername())
-                .withArrayClaim(AUTHORITIES, claims)
-                .withExpiresAt(new Date(System.currentTimeMillis() + EXPIRATION_TIME))
-                .sign(HMAC512(secret.getBytes()));
+        return JWT.create().withIssuer(MMACEDOARAUJO_LLC).withAudience(MMACEDOARAUJO_ADMINISTRATION).withIssuedAt(new Date()).withSubject(userPrincipal.getUsername()).withArrayClaim(AUTHORITIES, claims).withExpiresAt(new Date(System.currentTimeMillis() + EXPIRATION_TIME)).sign(HMAC512(secret.getBytes()));
     }
 
     public List<GrantedAuthority> getAuthorities(String token) {
@@ -48,8 +41,7 @@ public class JWTTokenProvider {
     }
 
     public Authentication getAuthentication(String username, List<GrantedAuthority> authorities, HttpServletRequest request) {
-        UsernamePasswordAuthenticationToken authenticationToken =
-                new UsernamePasswordAuthenticationToken(username, null, authorities);
+        UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(username, null, authorities);
         authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
         return authenticationToken;
     }
@@ -71,18 +63,14 @@ public class JWTTokenProvider {
 
     private String[] getClaimsFromToken(String token) {
         JWTVerifier verifier = getJWTVerifier();
-        return verifier.verify(token)
-                .getClaim(AUTHORITIES)
-                .asArray(String.class);
+        return verifier.verify(token).getClaim(AUTHORITIES).asArray(String.class);
     }
 
     private JWTVerifier getJWTVerifier() {
         JWTVerifier verifier;
         try {
             Algorithm algorithm = Algorithm.HMAC512(secret);
-            verifier = JWT.require(algorithm)
-                    .withIssuer(MMACEDOARAUJO_LLC)
-                    .build();
+            verifier = JWT.require(algorithm).withIssuer(MMACEDOARAUJO_LLC).build();
         } catch (JWTVerificationException exception) {
             throw new JWTVerificationException(TOKEN_CANNOT_BE_VERIFIED);
         }

@@ -49,10 +49,9 @@ public class SecurityConfiguration {
                 .sessionManagement()
                 .sessionCreationPolicy(STATELESS)
                 .and()
-                .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers(PUBLIC_URLS).permitAll()
-                        .anyRequest()
-                        .authenticated())
+                .authorizeRequests().antMatchers(PUBLIC_URLS).permitAll()
+                .anyRequest().authenticated()
+                .and()
                 .exceptionHandling()
                 .accessDeniedHandler(jwtAccessDeniedHandler)
                 .authenticationEntryPoint(jwtAuthenticationEntryPoint)
