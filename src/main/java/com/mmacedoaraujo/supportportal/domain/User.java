@@ -30,7 +30,7 @@ public class User implements Serializable {
     private Date lasLoginDate;
     private Date lastLoginDateDisplay;
     private Date joinDate;
-    private String[] roles;
+    private String role;
     private String[] authorities;
     private boolean isEnabled;
     private boolean isNonLocked;
