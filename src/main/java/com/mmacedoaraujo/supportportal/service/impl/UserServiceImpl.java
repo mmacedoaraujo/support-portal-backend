@@ -2,6 +2,7 @@ package com.mmacedoaraujo.supportportal.service.impl;
 
 import com.mmacedoaraujo.supportportal.domain.User;
 import com.mmacedoaraujo.supportportal.domain.UserPrincipal;
+import com.mmacedoaraujo.supportportal.enumeration.Role;
 import com.mmacedoaraujo.supportportal.exception.domain.EmailExistException;
 import com.mmacedoaraujo.supportportal.exception.domain.UserNotFoundException;
 import com.mmacedoaraujo.supportportal.exception.domain.UsernameExistException;
@@ -9,16 +10,21 @@ import com.mmacedoaraujo.supportportal.repository.UserRepository;
 import com.mmacedoaraujo.supportportal.service.UserService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.util.Date;
 import java.util.List;
+
+import static com.mmacedoaraujo.supportportal.enumeration.Role.ROLE_USER;
 
 @Service
 @AllArgsConstructor
@@ -28,6 +34,7 @@ import java.util.List;
 public class UserServiceImpl implements UserService, UserDetailsService {
 
     private final UserRepository userRepository;
+    private final BCryptPasswordEncoder passwordEncoder;
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
@@ -48,7 +55,57 @@ public class UserServiceImpl implements UserService, UserDetailsService {
     @Override
     public User register(String firstName, String lastName, String username, String email) throws UserNotFoundException, EmailExistException, UsernameExistException {
         validateNewUsernameAndEmail(StringUtils.EMPTY, username, email);
+        User user = new User();
+        String password = generatePassword();
+        String encodedPassword = encodePassword(password);
+        user.builder()
+                .id(generateUserId())
+                .firstName(firstName)
+                .lastName(lastName)
+                .username(username)
+                .email(email)
+                .joinDate(new Date())
+                .password(encodedPassword)
+                .isEnabled(true)
+                .isNonLocked(true)
+                .role(Role.ROLE_USER.name())
+                .authorities(ROLE_USER.getAuthorities())
+                .profileImageUrl(getTemporaryProfileImageUrl());
+        userRepository.save(user);
+        log.info("New user password: " + password);
         return null;
+    }
+
+
+    @Override
+    public List<User> getUsers() {
+        return null;
+    }
+
+    @Override
+    public User findUserByUsername(String username) {
+        return null;
+    }
+
+    @Override
+    public User findUserByEmail(String email) {
+        return null;
+    }
+
+    private String getTemporaryProfileImageUrl() {
+        return ServletUriComponentsBuilder.fromCurrentContextPath().path("/user/image/profile/temp").toUriString();
+    }
+
+    private String encodePassword(String password) {
+        return passwordEncoder.encode(password);
+    }
+
+    private String generatePassword() {
+        return RandomStringUtils.randomAlphanumeric(10);
+    }
+
+    private String generateUserId() {
+        return RandomStringUtils.randomNumeric(10);
     }
 
     private User validateNewUsernameAndEmail(String currentUsername, String newUsername, String newEmail) throws UserNotFoundException, UsernameExistException, EmailExistException {
@@ -82,20 +139,5 @@ public class UserServiceImpl implements UserService, UserDetailsService {
 
             return null;
         }
-    }
-
-    @Override
-    public List<User> getUsers() {
-        return null;
-    }
-
-    @Override
-    public User findUserByUsername(String username) {
-        return null;
-    }
-
-    @Override
-    public User findUserByEmail(String email) {
-        return null;
     }
 }
