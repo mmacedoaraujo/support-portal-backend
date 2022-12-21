@@ -24,6 +24,7 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import java.util.Date;
 import java.util.List;
 
+import static com.mmacedoaraujo.supportportal.constant.UserServiceImplConstant.*;
 import static com.mmacedoaraujo.supportportal.enumeration.Role.ROLE_USER;
 
 @Service
@@ -32,6 +33,7 @@ import static com.mmacedoaraujo.supportportal.enumeration.Role.ROLE_USER;
 @Transactional
 @Qualifier("userDetailsService")
 public class UserServiceImpl implements UserService, UserDetailsService {
+
 
     private final UserRepository userRepository;
 
@@ -44,8 +46,8 @@ public class UserServiceImpl implements UserService, UserDetailsService {
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         User user = userRepository.findByUsername(username);
         if (user == null) {
-            log.error("User not found by username: " + username);
-            throw new UsernameNotFoundException("User not found by username: " + username);
+            log.error(USER_NOT_FOUND_BY_USERNAME + username);
+            throw new UsernameNotFoundException(USER_NOT_FOUND_BY_USERNAME + username);
         } else {
             user.setLastLoginDate(user.getLastLoginDate());
             user.setLastLoginDate(new Date());
@@ -82,7 +84,7 @@ public class UserServiceImpl implements UserService, UserDetailsService {
 
     @Override
     public List<User> getUsers() {
-        return null;
+        return userRepository.findAll();
     }
 
     @Override
@@ -96,9 +98,8 @@ public class UserServiceImpl implements UserService, UserDetailsService {
     }
 
     private String getTemporaryProfileImageUrl() {
-        return ServletUriComponentsBuilder.fromCurrentContextPath().path("/user/image/profile/temp").toUriString();
+        return ServletUriComponentsBuilder.fromCurrentContextPath().path(DEFAULT_USER_IMAGE_PATH).toUriString();
     }
-
 
     private String encodePassword(String password) {
         return encoder().encode(password);
@@ -113,32 +114,26 @@ public class UserServiceImpl implements UserService, UserDetailsService {
     }
 
     private User validateNewUsernameAndEmail(String currentUsername, String newUsername, String newEmail) throws UserNotFoundException, UsernameExistException, EmailExistException {
+        User currentUser = findByUsername(currentUsername);
+        User userByNewUsername = findByUsername(newUsername);
+        User userByNewEmail = findByEmail(newEmail);
         if (StringUtils.isNotBlank(currentUsername)) {
-            User currentUser = findByUsername(currentUsername);
             if (currentUser == null) {
-                throw new UserNotFoundException("No user found by username " + currentUsername);
+                throw new UserNotFoundException(USER_NOT_FOUND_BY_USERNAME + currentUsername);
             }
-
-            User userByNewUsername = findByUsername(newUsername);
             if (userByNewUsername != null && !currentUser.getId().equals(userByNewUsername.getId())) {
-                throw new UsernameExistException("Username already exists");
+                throw new UsernameExistException(USERNAME_ALREADY_EXISTS);
             }
-
-            User userByNewEmail = findByEmail(newEmail);
             if (userByNewEmail != null && !currentUser.getId().equals(userByNewEmail.getId())) {
-                throw new EmailExistException("Email already exists");
+                throw new EmailExistException(EMAIL_ALREADY_EXISTS);
             }
-
             return currentUser;
         } else {
-            User userByUsername = findByUsername(newUsername);
-            if (userByUsername != null) {
-                throw new UsernameExistException("Username already exists");
+            if (userByNewUsername != null) {
+                throw new UsernameExistException(USERNAME_ALREADY_EXISTS);
             }
-
-            User userByEmail = findByEmail(newEmail);
-            if (userByEmail != null) {
-                throw new UsernameExistException("Email already exists");
+            if (userByNewEmail != null) {
+                throw new UsernameExistException(EMAIL_ALREADY_EXISTS);
             }
 
             return null;
