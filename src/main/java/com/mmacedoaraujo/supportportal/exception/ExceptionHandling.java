@@ -1,7 +1,11 @@
-package com.mmacedoaraujo.supportportal.exception.domain;
+package com.mmacedoaraujo.supportportal.exception;
 
 import com.auth0.jwt.exceptions.TokenExpiredException;
 import com.mmacedoaraujo.supportportal.domain.HttpResponse;
+import com.mmacedoaraujo.supportportal.exception.domain.EmailExistException;
+import com.mmacedoaraujo.supportportal.exception.domain.EmailNotFoundException;
+import com.mmacedoaraujo.supportportal.exception.domain.UserNotFoundException;
+import com.mmacedoaraujo.supportportal.exception.domain.UsernameExistException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.web.servlet.error.ErrorController;
 import org.springframework.http.HttpMethod;

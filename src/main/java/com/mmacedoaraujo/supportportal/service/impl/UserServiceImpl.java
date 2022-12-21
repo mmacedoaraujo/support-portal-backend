@@ -2,10 +2,12 @@ package com.mmacedoaraujo.supportportal.service.impl;
 
 import com.mmacedoaraujo.supportportal.domain.User;
 import com.mmacedoaraujo.supportportal.domain.UserPrincipal;
+import com.mmacedoaraujo.supportportal.exception.domain.UserNotFoundException;
 import com.mmacedoaraujo.supportportal.repository.UserRepository;
 import com.mmacedoaraujo.supportportal.service.UserService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -14,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Date;
+import java.util.List;
 
 @Service
 @AllArgsConstructor
@@ -38,5 +41,35 @@ public class UserServiceImpl implements UserService, UserDetailsService {
             log.info("Returning found user by username: " + username);
             return userPrincipal;
         }
+    }
+
+    @Override
+    public User register(String firstName, String lastName, String username, String email) {
+        validateNewUsernameAndEmail();
+        return null;
+    }
+
+    private User validateNewUsernameAndEmail(String currentUsername, String newUsername, String newEmail) throws UserNotFoundException {
+        if (StringUtils.isNotBlank(currentUsername)) {
+            User currentUser = findUserByUsername(currentUsername);
+            if (currentUser == null) {
+                throw new UserNotFoundException("No user found by username " + currentUsername);
+            }
+        }
+    }
+
+    @Override
+    public List<User> getUsers() {
+        return null;
+    }
+
+    @Override
+    public User findUserByUsername(String username) {
+        return null;
+    }
+
+    @Override
+    public User findUserByEmail(String email) {
+        return null;
     }
 }
