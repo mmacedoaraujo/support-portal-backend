@@ -13,6 +13,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.annotation.Bean;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -34,7 +35,11 @@ import static com.mmacedoaraujo.supportportal.enumeration.Role.ROLE_USER;
 public class UserServiceImpl implements UserService, UserDetailsService {
 
     private final UserRepository userRepository;
-    private final BCryptPasswordEncoder passwordEncoder;
+
+    @Bean
+    public BCryptPasswordEncoder encoder() {
+        return new BCryptPasswordEncoder();
+    }
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
@@ -57,7 +62,7 @@ public class UserServiceImpl implements UserService, UserDetailsService {
         validateNewUsernameAndEmail(StringUtils.EMPTY, username, email);
         User user = new User();
         String password = generatePassword();
-        String encodedPassword = encodePassword(password);
+        String encodedPassword = encodePassword(password).toString();
         user.builder()
                 .id(generateUserId())
                 .firstName(firstName)
@@ -96,8 +101,9 @@ public class UserServiceImpl implements UserService, UserDetailsService {
         return ServletUriComponentsBuilder.fromCurrentContextPath().path("/user/image/profile/temp").toUriString();
     }
 
+
     private String encodePassword(String password) {
-        return passwordEncoder.encode(password);
+        return encoder().encode(password);
     }
 
     private String generatePassword() {
@@ -115,13 +121,13 @@ public class UserServiceImpl implements UserService, UserDetailsService {
                 throw new UserNotFoundException("No user found by username " + currentUsername);
             }
 
-            User userByUsername = findUserByUsername(newUsername);
-            if (userByUsername != null && !currentUser.getId().equals(userByUsername.getId())) {
+            User userByNewUsername = findUserByUsername(newUsername);
+            if (userByNewUsername != null && !currentUser.getId().equals(userByNewUsername.getId())) {
                 throw new UsernameExistException("Username already exists");
             }
 
-            User userByEmail = findUserByEmail(newEmail);
-            if (userByEmail != null && !currentUser.getId().equals(userByEmail.getId())) {
+            User userByNewEmail = findUserByEmail(newEmail);
+            if (userByNewEmail != null && !currentUser.getId().equals(userByNewEmail.getId())) {
                 throw new EmailExistException("Email already exists");
             }
 
