@@ -2,7 +2,9 @@ package com.mmacedoaraujo.supportportal.service.impl;
 
 import com.mmacedoaraujo.supportportal.domain.User;
 import com.mmacedoaraujo.supportportal.domain.UserPrincipal;
+import com.mmacedoaraujo.supportportal.exception.domain.EmailExistException;
 import com.mmacedoaraujo.supportportal.exception.domain.UserNotFoundException;
+import com.mmacedoaraujo.supportportal.exception.domain.UsernameExistException;
 import com.mmacedoaraujo.supportportal.repository.UserRepository;
 import com.mmacedoaraujo.supportportal.service.UserService;
 import lombok.AllArgsConstructor;
@@ -44,17 +46,41 @@ public class UserServiceImpl implements UserService, UserDetailsService {
     }
 
     @Override
-    public User register(String firstName, String lastName, String username, String email) {
-        validateNewUsernameAndEmail();
+    public User register(String firstName, String lastName, String username, String email) throws UserNotFoundException, EmailExistException, UsernameExistException {
+        validateNewUsernameAndEmail(StringUtils.EMPTY, username, email);
         return null;
     }
 
-    private User validateNewUsernameAndEmail(String currentUsername, String newUsername, String newEmail) throws UserNotFoundException {
+    private User validateNewUsernameAndEmail(String currentUsername, String newUsername, String newEmail) throws UserNotFoundException, UsernameExistException, EmailExistException {
         if (StringUtils.isNotBlank(currentUsername)) {
             User currentUser = findUserByUsername(currentUsername);
             if (currentUser == null) {
                 throw new UserNotFoundException("No user found by username " + currentUsername);
             }
+
+            User userByUsername = findUserByUsername(newUsername);
+            if (userByUsername != null && !currentUser.getId().equals(userByUsername.getId())) {
+                throw new UsernameExistException("Username already exists");
+            }
+
+            User userByEmail = findUserByEmail(newEmail);
+            if (userByEmail != null && !currentUser.getId().equals(userByEmail.getId())) {
+                throw new EmailExistException("Email already exists");
+            }
+
+            return currentUser;
+        } else {
+            User userByUsername = findUserByUsername(newUsername);
+            if (userByUsername != null) {
+                throw new UsernameExistException("Username already exists");
+            }
+
+            User userByEmail = findUserByEmail(newEmail);
+            if (userByEmail != null) {
+                throw new UsernameExistException("Email already exists");
+            }
+
+            return null;
         }
     }
 
