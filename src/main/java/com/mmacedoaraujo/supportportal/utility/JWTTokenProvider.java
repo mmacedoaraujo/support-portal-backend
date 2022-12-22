@@ -32,7 +32,14 @@ public class JWTTokenProvider {
 
     public String generateJwtToken(UserPrincipal userPrincipal) {
         String[] claims = getClaimsFromUser(userPrincipal);
-        return JWT.create().withIssuer(MMACEDOARAUJO_LLC).withAudience(MMACEDOARAUJO_ADMINISTRATION).withIssuedAt(new Date()).withSubject(userPrincipal.getUsername()).withArrayClaim(AUTHORITIES, claims).withExpiresAt(new Date(System.currentTimeMillis() + EXPIRATION_TIME)).sign(HMAC512(secret.getBytes()));
+        return JWT.create()
+                .withIssuer(MMACEDOARAUJO_LLC)
+                .withAudience(MMACEDOARAUJO_ADMINISTRATION)
+                .withIssuedAt(new Date())
+                .withSubject(userPrincipal.getUsername())
+                .withArrayClaim(AUTHORITIES, claims)
+                .withExpiresAt(new Date(System.currentTimeMillis() + EXPIRATION_TIME))
+                .sign(HMAC512(secret.getBytes()));
     }
 
     public List<GrantedAuthority> getAuthorities(String token) {

@@ -29,16 +29,16 @@ public class UserResource extends ExceptionHandling {
     private final UserRepository userRepository;
 
     private final UserService userService;
-    private final AuthenticationManager authenticationManager;
+    private final AuthenticationManager userResourceAuthenticationManager;
     private final JWTTokenProvider jwtTokenProvider;
 
-    @PostMapping("/register")
-    public ResponseEntity<User> login(@RequestBody User user) throws UserNotFoundException, EmailExistException, UsernameExistException {
+    @PostMapping("/login")
+    public ResponseEntity<User> login(@RequestBody User user) {
         authenticate(user.getUsername(), user.getPassword());
         User authenticatedUser = userService.findByUsername(user.getUsername());
         UserPrincipal userPrincipal = new UserPrincipal(authenticatedUser);
         HttpHeaders jwtHeader = getJwtHeader(userPrincipal);
-        return new ResponseEntity<>(authenticatedUser, jwtHeader, HttpStatus.CREATED);
+        return new ResponseEntity<>(authenticatedUser, jwtHeader, HttpStatus.OK);
     }
 
 
@@ -55,6 +55,6 @@ public class UserResource extends ExceptionHandling {
     }
 
     private void authenticate(String username, String password) {
-        authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(username, password));
+        userResourceAuthenticationManager.authenticate(new UsernamePasswordAuthenticationToken(username, password));
     }
 }
