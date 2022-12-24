@@ -59,9 +59,8 @@ public class UserServiceImpl implements UserService, UserDetailsService {
     }
 
     @Override
-    public User register(String firstName, String lastName, String username, String email) throws UserNotFoundException, EmailExistException, UsernameExistException {
+    public User register(String firstName, String lastName, String username, String email, String password) throws UserNotFoundException, EmailExistException, UsernameExistException {
         validateNewUsernameAndEmail(StringUtils.EMPTY, username, email);
-        String password = generatePassword();
         String encodedPassword = encodePassword(password).toString();
         User user = User.builder()
                 .userId(generateUserId())
