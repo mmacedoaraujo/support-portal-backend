@@ -6,6 +6,7 @@ import com.mmacedoaraujo.supportportal.exception.domain.EmailExistException;
 import com.mmacedoaraujo.supportportal.exception.domain.UserNotFoundException;
 import com.mmacedoaraujo.supportportal.exception.domain.UsernameExistException;
 import com.mmacedoaraujo.supportportal.repository.UserRepository;
+import com.mmacedoaraujo.supportportal.service.LoginAttemptService;
 import com.mmacedoaraujo.supportportal.service.UserService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -23,6 +24,7 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 import static com.mmacedoaraujo.supportportal.constant.UserServiceImplConstant.*;
 import static com.mmacedoaraujo.supportportal.enumeration.Role.ROLE_USER;
@@ -34,6 +36,7 @@ import static com.mmacedoaraujo.supportportal.enumeration.Role.ROLE_USER;
 @Qualifier("userDetailsService")
 public class UserServiceImpl implements UserService, UserDetailsService {
 
+    private final LoginAttemptService loginAttemptService;
 
     private final UserRepository userRepository;
 
@@ -49,6 +52,7 @@ public class UserServiceImpl implements UserService, UserDetailsService {
             log.error(USER_NOT_FOUND_BY_USERNAME + username);
             throw new UsernameNotFoundException(USER_NOT_FOUND_BY_USERNAME + username);
         } else {
+            validateLoginAttempt(user);
             user.setLastLoginDate(user.getLastLoginDate());
             user.setLastLoginDate(new Date());
             userRepository.save(user);
@@ -58,23 +62,12 @@ public class UserServiceImpl implements UserService, UserDetailsService {
         }
     }
 
+
     @Override
     public User register(String firstName, String lastName, String username, String email, String password) throws UserNotFoundException, EmailExistException, UsernameExistException {
         validateNewUsernameAndEmail(StringUtils.EMPTY, username, email);
         String encodedPassword = encodePassword(password).toString();
-        User user = User.builder()
-                .userId(generateUserId())
-                .firstName(firstName)
-                .lastName(lastName)
-                .username(username)
-                .email(email)
-                .joinDate(new Date())
-                .password(encodedPassword)
-                .isEnabled(true)
-                .isNonLocked(true)
-                .role(ROLE_USER.name())
-                .authorities(ROLE_USER.getAuthorities())
-                .profileImageUrl(getTemporaryProfileImageUrl()).build();
+        User user = User.builder().userId(generateUserId()).firstName(firstName).lastName(lastName).username(username).email(email).joinDate(new Date()).password(encodedPassword).isEnabled(true).isNonLocked(true).role(ROLE_USER.name()).authorities(ROLE_USER.getAuthorities()).profileImageUrl(getTemporaryProfileImageUrl()).build();
         userRepository.save(user);
         log.info("New user password: " + password);
         return user;
@@ -110,6 +103,18 @@ public class UserServiceImpl implements UserService, UserDetailsService {
 
     private String generateUserId() {
         return RandomStringUtils.randomNumeric(10);
+    }
+
+    private void validateLoginAttempt(User user) {
+        if (user.isNonLocked()) {
+            if (loginAttemptService.hasExceededMaxAttempt(user.getUsername())) {
+                user.setNonLocked(false);
+            } else {
+                user.setNonLocked(true);
+            }
+        } else {
+            loginAttemptService.evictUserFromLoginAttemptCache(user.getUsername());
+        }
     }
 
     private User validateNewUsernameAndEmail(String currentUsername, String newUsername, String newEmail) throws UserNotFoundException, UsernameExistException, EmailExistException {
