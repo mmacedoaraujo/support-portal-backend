@@ -3,8 +3,8 @@ package com.mmacedoaraujo.supportportal.constant;
 public class EmailConstant {
 
     public static final String SIMPLE_MAIL_TRANSFER_PROTOCOL = "smtps";
-    public static final String USERNAME = "email@gmail.com";
-    public static final String PASSWORD = "Your password";
+    public static final String USERNAME = System.getenv("EMAIL");
+    public static final String PASSWORD = System.getenv("PASSWORD_EMAIL");
     public static final String FROM_EMAIL = "support@mmacedoaraujo.com";
     public static final String CC_EMAIL = "";
     public static final String EMAIL_SUBJECT = "mmacedoaraujo, New Password";
