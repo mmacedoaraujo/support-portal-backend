@@ -6,6 +6,7 @@ import com.mmacedoaraujo.supportportal.exception.domain.EmailExistException;
 import com.mmacedoaraujo.supportportal.exception.domain.UserNotFoundException;
 import com.mmacedoaraujo.supportportal.exception.domain.UsernameExistException;
 import com.mmacedoaraujo.supportportal.repository.UserRepository;
+import com.mmacedoaraujo.supportportal.service.EmailService;
 import com.mmacedoaraujo.supportportal.service.LoginAttemptService;
 import com.mmacedoaraujo.supportportal.service.UserService;
 import lombok.AllArgsConstructor;
@@ -22,9 +23,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+import javax.mail.MessagingException;
 import java.util.Date;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 
 import static com.mmacedoaraujo.supportportal.constant.UserServiceImplConstant.*;
 import static com.mmacedoaraujo.supportportal.enumeration.Role.ROLE_USER;
@@ -36,6 +37,7 @@ import static com.mmacedoaraujo.supportportal.enumeration.Role.ROLE_USER;
 @Qualifier("userDetailsService")
 public class UserServiceImpl implements UserService, UserDetailsService {
 
+    private final EmailService emailService;
     private final LoginAttemptService loginAttemptService;
 
     private final UserRepository userRepository;
@@ -64,12 +66,12 @@ public class UserServiceImpl implements UserService, UserDetailsService {
 
 
     @Override
-    public User register(String firstName, String lastName, String username, String email, String password) throws UserNotFoundException, EmailExistException, UsernameExistException {
+    public User register(String firstName, String lastName, String username, String email, String password) throws UserNotFoundException, EmailExistException, UsernameExistException, MessagingException {
         validateNewUsernameAndEmail(StringUtils.EMPTY, username, email);
         String encodedPassword = encodePassword(password).toString();
         User user = User.builder().userId(generateUserId()).firstName(firstName).lastName(lastName).username(username).email(email).joinDate(new Date()).password(encodedPassword).isEnabled(true).isNonLocked(true).role(ROLE_USER.name()).authorities(ROLE_USER.getAuthorities()).profileImageUrl(getTemporaryProfileImageUrl()).build();
         userRepository.save(user);
-        log.info("New user password: " + password);
+        emailService.sendNewPasswordEmail(firstName, password, email);
         return user;
     }
 
