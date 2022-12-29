@@ -2,6 +2,7 @@ package com.mmacedoaraujo.supportportal.service;
 
 import com.mmacedoaraujo.supportportal.domain.User;
 import com.mmacedoaraujo.supportportal.exception.domain.EmailExistException;
+import com.mmacedoaraujo.supportportal.exception.domain.EmailNotFoundException;
 import com.mmacedoaraujo.supportportal.exception.domain.UserNotFoundException;
 import com.mmacedoaraujo.supportportal.exception.domain.UsernameExistException;
 import org.springframework.web.multipart.MultipartFile;
@@ -21,11 +22,11 @@ public interface UserService {
 
     User addNewUser(String firstName, String lastName, String username, String password, String email, String role, boolean isNonLocked, boolean isActive, MultipartFile profileImage) throws UserNotFoundException, EmailExistException, UsernameExistException;
 
-    User updateUser(String currentUsername, String newFirstName, String newLastName, String username, String password, String newEmail, String role, boolean isNonLocked, boolean isActive, MultipartFile profileImage);
+    User updateUser(String currentUsername, String newFirstName, String newLastName, String username, String password, String newEmail, String role, boolean isNonLocked, boolean isActive, MultipartFile profileImage) throws UserNotFoundException, EmailExistException, UsernameExistException;
 
     void deleteUser(Long id);
 
-    void resetPassword(String email);
+    void resetPassword(String email) throws EmailNotFoundException;
 
     User updateProfileImage(String username, MultipartFile profileImage);
 }

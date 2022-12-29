@@ -3,6 +3,7 @@ package com.mmacedoaraujo.supportportal.service.impl;
 import com.mmacedoaraujo.supportportal.domain.User;
 import com.mmacedoaraujo.supportportal.domain.UserPrincipal;
 import com.mmacedoaraujo.supportportal.exception.domain.EmailExistException;
+import com.mmacedoaraujo.supportportal.exception.domain.EmailNotFoundException;
 import com.mmacedoaraujo.supportportal.exception.domain.UserNotFoundException;
 import com.mmacedoaraujo.supportportal.exception.domain.UsernameExistException;
 import com.mmacedoaraujo.supportportal.repository.UserRepository;
@@ -111,30 +112,49 @@ public class UserServiceImpl implements UserService, UserDetailsService {
         return user;
     }
 
-    private void saveProfileImage(User user, MultipartFile profileImage) {
-    }
-
-    private Role getRoleEnumName(String role) {
-    }
 
     @Override
-    public User updateUser(String currentUsername, String newFirstName, String newLastName, String username, String password, String newEmail, String role, boolean isNonLocked, boolean isActive, MultipartFile profileImage) {
-        return null;
+    public User updateUser(String currentUsername, String newFirstName, String newLastName, String username, String password, String newEmail, String role, boolean isNonLocked, boolean isActive, MultipartFile profileImage) throws UserNotFoundException, EmailExistException, UsernameExistException {
+        User currentUser = validateNewUsernameAndEmail(currentUsername, username, newEmail);
+        currentUser = User.builder()
+                .firstName(newFirstName)
+                .lastName(newLastName)
+                .joinDate(new Date())
+                .username(username)
+                .email(newEmail)
+                .isEnabled(true)
+                .isNonLocked(true)
+                .role(getRoleEnumName(role).name())
+                .build();
+        userRepository.save(currentUser);
+        saveProfileImage(currentUser, profileImage);
+        return currentUser;
     }
 
     @Override
     public void deleteUser(Long id) {
+        userRepository.deleteById(id);
 
     }
 
     @Override
-    public void resetPassword(String email) {
+    public void resetPassword(String email) throws EmailNotFoundException {
+        User userByEmail = userRepository.findByEmail(email);
+        if (userByEmail == null) {
+            throw new EmailNotFoundException(NO_USER_FOUND_BY_EMAIL + email);
+        }
+        String newPassword = encodePassword(generatePassword());
+        userByEmail.setPassword(newPassword);
+        userRepository.save(userByEmail);
+        emailService.sendNewPasswordEmail(userByEmail.getFirstName(), newPassword, userByEmail.getEmail());
 
     }
 
     @Override
     public User updateProfileImage(String username, MultipartFile profileImage) {
-        return null;
+        User user = validateNewUsernameAndEmail(username, null, null);
+        saveProfileImage(User user, profileImage);
+        return user;
     }
 
 
@@ -156,6 +176,12 @@ public class UserServiceImpl implements UserService, UserDetailsService {
 
     private String getTemporaryProfileImageUrl(String username) {
         return ServletUriComponentsBuilder.fromCurrentContextPath().path(DEFAULT_USER_IMAGE_PATH + username).toUriString();
+    }
+
+    private void saveProfileImage(User user, MultipartFile profileImage) {
+    }
+
+    private Role getRoleEnumName(String role) {
     }
 
     private String encodePassword(String password) {
