@@ -131,6 +131,7 @@ public class UserServiceImpl implements UserService, UserDetailsService {
                 .isEnabled(true)
                 .isNonLocked(true)
                 .role(getRoleEnumName(role).name())
+                .authorities(getRoleEnumName(role).getAuthorities())
                 .build();
         userRepository.save(currentUser);
         saveProfileImage(currentUser, profileImage);
@@ -189,7 +190,7 @@ public class UserServiceImpl implements UserService, UserDetailsService {
             Path userFolder = Paths.get(USER_FOLDER + user.getUsername()).toAbsolutePath().normalize();
             if (!Files.exists(userFolder)) {
                 Files.createDirectories(userFolder);
-                log.info(DIRECTORY_CREATED);
+                log.info(DIRECTORY_CREATED + userFolder);
             }
             Files.deleteIfExists(Paths.get(userFolder + user.getUsername() + DOT + JPEG_EXTENSION));
             Files.copy(profileImage.getInputStream(), userFolder.resolve(user.getUsername() + DOT + JPEG_EXTENSION), REPLACE_EXISTING);
@@ -200,6 +201,8 @@ public class UserServiceImpl implements UserService, UserDetailsService {
     }
 
     private String setProfileImageUrl(String username) {
+        return ServletUriComponentsBuilder.fromCurrentContextPath().path(USER_IMAGE_PATH + username + FORWARD_SLASH
+                + username + DOT + JPEG_EXTENSION).toUriString();
     }
 
     private Role getRoleEnumName(String role) {
