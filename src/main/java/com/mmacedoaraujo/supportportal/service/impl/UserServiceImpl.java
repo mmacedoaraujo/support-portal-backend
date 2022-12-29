@@ -21,14 +21,17 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import javax.mail.MessagingException;
 import java.util.Date;
 import java.util.List;
 
+import static com.mmacedoaraujo.supportportal.constant.FileConstant.DEFAULT_USER_IMAGE_PATH;
 import static com.mmacedoaraujo.supportportal.constant.UserServiceImplConstant.*;
 import static com.mmacedoaraujo.supportportal.enumeration.Role.ROLE_USER;
+import static org.apache.commons.lang3.StringUtils.EMPTY;
 
 @Service
 @AllArgsConstructor
@@ -67,12 +70,71 @@ public class UserServiceImpl implements UserService, UserDetailsService {
 
     @Override
     public User register(String firstName, String lastName, String username, String email, String password) throws UserNotFoundException, EmailExistException, UsernameExistException, MessagingException {
-        validateNewUsernameAndEmail(StringUtils.EMPTY, username, email);
-        String encodedPassword = encodePassword(password).toString();
-        User user = User.builder().userId(generateUserId()).firstName(firstName).lastName(lastName).username(username).email(email).joinDate(new Date()).password(encodedPassword).isEnabled(true).isNonLocked(true).role(ROLE_USER.name()).authorities(ROLE_USER.getAuthorities()).profileImageUrl(getTemporaryProfileImageUrl()).build();
+        validateNewUsernameAndEmail(EMPTY, username, email);
+        User user = User.builder().userId(generateUserId())
+                .firstName(firstName)
+                .lastName(lastName)
+                .username(username)
+                .email(email)
+                .joinDate(new Date())
+                .password(encodePassword(password))
+                .isEnabled(true)
+                .isNonLocked(true)
+                .role(ROLE_USER.name())
+                .authorities(ROLE_USER.getAuthorities())
+                .profileImageUrl(getTemporaryProfileImageUrl(username))
+                .build();
         userRepository.save(user);
         emailService.sendNewPasswordEmail(firstName, password, email);
         return user;
+    }
+
+    @Override
+    public User addNewUser(String firstName, String lastName, String username, String password, String email, String role, boolean isNonLocked, boolean isActive, MultipartFile profileImage) throws UserNotFoundException, EmailExistException, UsernameExistException {
+        validateNewUsernameAndEmail(EMPTY, username, email);
+        User user = User.builder().userId(generateUserId())
+                .firstName(firstName)
+                .lastName(lastName)
+                .username(username)
+                .email(email)
+                .joinDate(new Date())
+                .password(encodePassword(password))
+                .isEnabled(true)
+                .isNonLocked(true)
+                .role(getRoleEnumName(role).name())
+                .authorities(getRoleEnumName(role).getAuthorities)
+                .profileImageUrl(getTemporaryProfileImageUrl(username))
+                .build();
+
+        userRepository.save(user);
+        saveProfileImage(user, profileImage);
+        return user;
+    }
+
+    private void saveProfileImage(User user, MultipartFile profileImage) {
+    }
+
+    private Role getRoleEnumName(String role) {
+    }
+
+    @Override
+    public User updateUser(String currentUsername, String newFirstName, String newLastName, String username, String password, String newEmail, String role, boolean isNonLocked, boolean isActive, MultipartFile profileImage) {
+        return null;
+    }
+
+    @Override
+    public void deleteUser(Long id) {
+
+    }
+
+    @Override
+    public void resetPassword(String email) {
+
+    }
+
+    @Override
+    public User updateProfileImage(String username, MultipartFile profileImage) {
+        return null;
     }
 
 
@@ -91,8 +153,9 @@ public class UserServiceImpl implements UserService, UserDetailsService {
         return userRepository.findByEmail(email);
     }
 
-    private String getTemporaryProfileImageUrl() {
-        return ServletUriComponentsBuilder.fromCurrentContextPath().path(DEFAULT_USER_IMAGE_PATH).toUriString();
+
+    private String getTemporaryProfileImageUrl(String username) {
+        return ServletUriComponentsBuilder.fromCurrentContextPath().path(DEFAULT_USER_IMAGE_PATH + username).toUriString();
     }
 
     private String encodePassword(String password) {

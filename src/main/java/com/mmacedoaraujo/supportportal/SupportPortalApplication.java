@@ -3,6 +3,8 @@ package com.mmacedoaraujo.supportportal;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
+import java.io.File;
+
 import static com.mmacedoaraujo.supportportal.constant.FileConstant.USER_FOLDER;
 
 @SpringBootApplication

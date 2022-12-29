@@ -19,9 +19,9 @@ public interface UserService {
 
     User findByEmail(String email);
 
-    User addNewUser(String firstName, String lastName, String username, String email, String role, boolean isNonLocked, boolean isActive, MultipartFile profileImage);
+    User addNewUser(String firstName, String lastName, String username, String password, String email, String role, boolean isNonLocked, boolean isActive, MultipartFile profileImage) throws UserNotFoundException, EmailExistException, UsernameExistException;
 
-    User updateUser(String currentUsername, String newFirstName, String newLastName, String username, String newEmail, String role, boolean isNonLocked, boolean isActive, MultipartFile profileImage);
+    User updateUser(String currentUsername, String newFirstName, String newLastName, String username, String password, String newEmail, String role, boolean isNonLocked, boolean isActive, MultipartFile profileImage);
 
     void deleteUser(Long id);
 
