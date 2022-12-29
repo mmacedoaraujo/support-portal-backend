@@ -2,6 +2,7 @@ package com.mmacedoaraujo.supportportal.service.impl;
 
 import com.mmacedoaraujo.supportportal.domain.User;
 import com.mmacedoaraujo.supportportal.domain.UserPrincipal;
+import com.mmacedoaraujo.supportportal.enumeration.Role;
 import com.mmacedoaraujo.supportportal.exception.domain.EmailExistException;
 import com.mmacedoaraujo.supportportal.exception.domain.EmailNotFoundException;
 import com.mmacedoaraujo.supportportal.exception.domain.UserNotFoundException;
@@ -26,12 +27,17 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import javax.mail.MessagingException;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Date;
 import java.util.List;
 
-import static com.mmacedoaraujo.supportportal.constant.FileConstant.DEFAULT_USER_IMAGE_PATH;
+import static com.mmacedoaraujo.supportportal.constant.FileConstant.*;
 import static com.mmacedoaraujo.supportportal.constant.UserServiceImplConstant.*;
 import static com.mmacedoaraujo.supportportal.enumeration.Role.ROLE_USER;
+import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
 
 @Service
@@ -178,10 +184,26 @@ public class UserServiceImpl implements UserService, UserDetailsService {
         return ServletUriComponentsBuilder.fromCurrentContextPath().path(DEFAULT_USER_IMAGE_PATH + username).toUriString();
     }
 
-    private void saveProfileImage(User user, MultipartFile profileImage) {
+    private void saveProfileImage(User user, MultipartFile profileImage) throws IOException {
+        if (profileImage != null) {
+            Path userFolder = Paths.get(USER_FOLDER + user.getUsername()).toAbsolutePath().normalize();
+            if (!Files.exists(userFolder)) {
+                Files.createDirectories(userFolder);
+                log.info(DIRECTORY_CREATED);
+            }
+            Files.deleteIfExists(Paths.get(userFolder + user.getUsername() + DOT + JPEG_EXTENSION));
+            Files.copy(profileImage.getInputStream(), userFolder.resolve(user.getUsername() + DOT + JPEG_EXTENSION), REPLACE_EXISTING);
+            user.setProfileImageUrl(setProfileImageUrl(user.getUsername()));
+            userRepository.save(user);
+            log.info(FILE_SAVED_IN_FILE_SYSTEM + profileImage.getOriginalFilename());
+        }
+    }
+
+    private String setProfileImageUrl(String username) {
     }
 
     private Role getRoleEnumName(String role) {
+        return Role.valueOf(role.toUpperCase());
     }
 
     private String encodePassword(String password) {
