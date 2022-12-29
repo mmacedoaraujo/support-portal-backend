@@ -97,7 +97,7 @@ public class UserServiceImpl implements UserService, UserDetailsService {
     }
 
     @Override
-    public User addNewUser(String firstName, String lastName, String username, String password, String email, String role, boolean isNonLocked, boolean isActive, MultipartFile profileImage) throws UserNotFoundException, EmailExistException, UsernameExistException {
+    public User addNewUser(String firstName, String lastName, String username, String password, String email, String role, boolean isNonLocked, boolean isActive, MultipartFile profileImage) throws UserNotFoundException, EmailExistException, UsernameExistException, IOException {
         validateNewUsernameAndEmail(EMPTY, username, email);
         User user = User.builder().userId(generateUserId())
                 .firstName(firstName)
@@ -109,7 +109,7 @@ public class UserServiceImpl implements UserService, UserDetailsService {
                 .isEnabled(true)
                 .isNonLocked(true)
                 .role(getRoleEnumName(role).name())
-                .authorities(getRoleEnumName(role).getAuthorities)
+                .authorities(getRoleEnumName(role).getAuthorities())
                 .profileImageUrl(getTemporaryProfileImageUrl(username))
                 .build();
 
@@ -120,7 +120,7 @@ public class UserServiceImpl implements UserService, UserDetailsService {
 
 
     @Override
-    public User updateUser(String currentUsername, String newFirstName, String newLastName, String username, String password, String newEmail, String role, boolean isNonLocked, boolean isActive, MultipartFile profileImage) throws UserNotFoundException, EmailExistException, UsernameExistException {
+    public User updateUser(String currentUsername, String newFirstName, String newLastName, String username, String password, String newEmail, String role, boolean isNonLocked, boolean isActive, MultipartFile profileImage) throws UserNotFoundException, EmailExistException, UsernameExistException, IOException {
         User currentUser = validateNewUsernameAndEmail(currentUsername, username, newEmail);
         currentUser = User.builder()
                 .firstName(newFirstName)
@@ -145,7 +145,7 @@ public class UserServiceImpl implements UserService, UserDetailsService {
     }
 
     @Override
-    public void resetPassword(String email) throws EmailNotFoundException {
+    public void resetPassword(String email) throws EmailNotFoundException, MessagingException {
         User userByEmail = userRepository.findByEmail(email);
         if (userByEmail == null) {
             throw new EmailNotFoundException(NO_USER_FOUND_BY_EMAIL + email);
@@ -158,9 +158,9 @@ public class UserServiceImpl implements UserService, UserDetailsService {
     }
 
     @Override
-    public User updateProfileImage(String username, MultipartFile profileImage) {
+    public User updateProfileImage(String username, MultipartFile profileImage) throws UserNotFoundException, EmailExistException, UsernameExistException, IOException {
         User user = validateNewUsernameAndEmail(username, null, null);
-        saveProfileImage(User user, profileImage);
+        saveProfileImage(user, profileImage);
         return user;
     }
 
