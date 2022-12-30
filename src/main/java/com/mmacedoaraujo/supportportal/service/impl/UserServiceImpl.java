@@ -76,8 +76,9 @@ public class UserServiceImpl implements UserService, UserDetailsService {
 
 
     @Override
-    public User register(String firstName, String lastName, String username, String email, String password) throws UserNotFoundException, EmailExistException, UsernameExistException, MessagingException {
+    public User register(String firstName, String lastName, String username, String email) throws UserNotFoundException, EmailExistException, UsernameExistException, MessagingException {
         validateNewUsernameAndEmail(EMPTY, username, email);
+        String password = generatePassword();
         User user = User.builder().userId(generateUserId())
                 .firstName(firstName)
                 .lastName(lastName)
@@ -97,7 +98,7 @@ public class UserServiceImpl implements UserService, UserDetailsService {
     }
 
     @Override
-    public User addNewUser(String firstName, String lastName, String username, String password, String email, String role, boolean isNonLocked, boolean isActive, MultipartFile profileImage) throws UserNotFoundException, EmailExistException, UsernameExistException, IOException {
+    public User addNewUser(String firstName, String lastName, String username, String email, String role, boolean isNonLocked, boolean isActive, MultipartFile profileImage) throws UserNotFoundException, EmailExistException, UsernameExistException, IOException {
         validateNewUsernameAndEmail(EMPTY, username, email);
         User user = User.builder().userId(generateUserId())
                 .firstName(firstName)
@@ -105,7 +106,7 @@ public class UserServiceImpl implements UserService, UserDetailsService {
                 .username(username)
                 .email(email)
                 .joinDate(new Date())
-                .password(encodePassword(password))
+                .password(encodePassword(generatePassword()))
                 .isEnabled(true)
                 .isNonLocked(true)
                 .role(getRoleEnumName(role).name())
@@ -120,7 +121,7 @@ public class UserServiceImpl implements UserService, UserDetailsService {
 
 
     @Override
-    public User updateUser(String currentUsername, String newFirstName, String newLastName, String username, String password, String newEmail, String role, boolean isNonLocked, boolean isActive, MultipartFile profileImage) throws UserNotFoundException, EmailExistException, UsernameExistException, IOException {
+    public User updateUser(String currentUsername, String newFirstName, String newLastName, String username, String newEmail, String role, boolean isNonLocked, boolean isActive, MultipartFile profileImage) throws UserNotFoundException, EmailExistException, UsernameExistException, IOException {
         User currentUser = validateNewUsernameAndEmail(currentUsername, username, newEmail);
         currentUser = User.builder()
                 .firstName(newFirstName)
