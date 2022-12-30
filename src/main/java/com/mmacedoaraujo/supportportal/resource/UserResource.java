@@ -20,6 +20,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.mail.MessagingException;
 import java.io.IOException;
+import java.util.List;
 
 import static com.mmacedoaraujo.supportportal.constant.SecurityConstant.JWT_TOKEN_HEADER;
 
@@ -91,6 +92,12 @@ public class UserResource extends ExceptionHandling {
         User userFoundbyUsername = userService.findByUsername(username);
 
         return new ResponseEntity<>(userFoundbyUsername, HttpStatus.OK);
+    }
+
+    @GetMapping("/list")
+    public ResponseEntity<List<User>> getAllUsers() {
+        List<User> usersList = userService.getUsers();
+        return new ResponseEntity<>(usersList, HttpStatus.OK);
     }
 
     private HttpHeaders getJwtHeader(UserPrincipal userPrincipal) {
