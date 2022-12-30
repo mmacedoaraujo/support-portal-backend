@@ -1,5 +1,6 @@
 package com.mmacedoaraujo.supportportal.resource;
 
+import com.mmacedoaraujo.supportportal.domain.HttpResponse;
 import com.mmacedoaraujo.supportportal.domain.User;
 import com.mmacedoaraujo.supportportal.domain.UserPrincipal;
 import com.mmacedoaraujo.supportportal.exception.ExceptionHandling;
@@ -23,11 +24,13 @@ import java.io.IOException;
 import java.util.List;
 
 import static com.mmacedoaraujo.supportportal.constant.SecurityConstant.JWT_TOKEN_HEADER;
+import static org.springframework.http.HttpStatus.OK;
 
 @RestController
 @RequestMapping(path = {"/", "/users"})
 @AllArgsConstructor
 public class UserResource extends ExceptionHandling {
+    public static final String EMAIL_WITH_NEW_PASSWORD_SENT = "An email with a new password was sent to: ";
     private final UserRepository userRepository;
 
     private final UserService userService;
@@ -40,7 +43,7 @@ public class UserResource extends ExceptionHandling {
         User authenticatedUser = userService.findByUsername(user.getUsername());
         UserPrincipal userPrincipal = new UserPrincipal(authenticatedUser);
         HttpHeaders jwtHeader = getJwtHeader(userPrincipal);
-        return new ResponseEntity<>(authenticatedUser, jwtHeader, HttpStatus.OK);
+        return new ResponseEntity<>(authenticatedUser, jwtHeader, OK);
     }
 
 
@@ -91,13 +94,24 @@ public class UserResource extends ExceptionHandling {
     public ResponseEntity<User> findByUsername(@PathVariable("username") String username) {
         User userFoundbyUsername = userService.findByUsername(username);
 
-        return new ResponseEntity<>(userFoundbyUsername, HttpStatus.OK);
+        return new ResponseEntity<>(userFoundbyUsername, OK);
     }
 
     @GetMapping("/list")
     public ResponseEntity<List<User>> getAllUsers() {
         List<User> usersList = userService.getUsers();
-        return new ResponseEntity<>(usersList, HttpStatus.OK);
+        return new ResponseEntity<>(usersList, OK);
+    }
+
+
+    @GetMapping("/resetPassword/{email}")
+    public ResponseEntity<HttpResponse> resetPassword(@PathVariable("email") String email) {
+        userService.resetPassword(email);
+        return response(OK, EMAIL_WITH_NEW_PASSWORD_SENT + email);
+    }
+
+    private ResponseEntity<HttpResponse> response(HttpStatus status, String s) {
+
     }
 
     private HttpHeaders getJwtHeader(UserPrincipal userPrincipal) {
