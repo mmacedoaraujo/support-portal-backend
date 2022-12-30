@@ -60,10 +60,29 @@ public class UserResource extends ExceptionHandling {
                                            @RequestParam(value = "profileImage", required = false) MultipartFile profileImage)
             throws UserNotFoundException, EmailExistException, IOException, UsernameExistException {
 
-        User user = userService.addNewUser(firstName, lastName, username, email, role,
+        User newUser = userService.addNewUser(firstName, lastName, username, email, role,
                 Boolean.parseBoolean(isNonLocked), Boolean.parseBoolean(isEnabled), profileImage);
 
-        return new ResponseEntity<>(user, HttpStatus.CREATED);
+        return new ResponseEntity<>(newUser, HttpStatus.CREATED);
+
+    }
+
+    @PostMapping("/update")
+    public ResponseEntity<User> update(@RequestParam("currentUsername") String currentUsername,
+                                       @RequestParam("firstName") String firstName,
+                                       @RequestParam("lastName") String lastName,
+                                       @RequestParam("username") String username,
+                                       @RequestParam("email") String email,
+                                       @RequestParam("role") String role,
+                                       @RequestParam("isEnabled") String isEnabled,
+                                       @RequestParam("isNonLocked") String isNonLocked,
+                                       @RequestParam(value = "profileImage", required = false) MultipartFile profileImage)
+            throws UserNotFoundException, EmailExistException, IOException, UsernameExistException {
+
+        User updatedUser = userService.updateUser(currentUsername, firstName, lastName, username, email, role,
+                Boolean.parseBoolean(isNonLocked), Boolean.parseBoolean(isEnabled), profileImage);
+
+        return new ResponseEntity<>(updatedUser, HttpStatus.CREATED);
 
     }
 
