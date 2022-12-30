@@ -86,6 +86,13 @@ public class UserResource extends ExceptionHandling {
 
     }
 
+    @GetMapping("/find/{username}")
+    public ResponseEntity<User> findByUsername(@PathVariable("username") String username) {
+        User userFoundbyUsername = userService.findByUsername(username);
+
+        return new ResponseEntity<>(userFoundbyUsername, HttpStatus.OK);
+    }
+
     private HttpHeaders getJwtHeader(UserPrincipal userPrincipal) {
         HttpHeaders headers = new HttpHeaders();
         headers.add(JWT_TOKEN_HEADER, jwtTokenProvider.generateJwtToken(userPrincipal));
