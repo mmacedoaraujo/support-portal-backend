@@ -22,14 +22,16 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.mail.MessagingException;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Date;
 import java.util.List;
 
-import static com.mmacedoaraujo.supportportal.constant.FileConstant.FORWARD_SLASH;
-import static com.mmacedoaraujo.supportportal.constant.FileConstant.USER_FOLDER;
+import static com.mmacedoaraujo.supportportal.constant.FileConstant.*;
 import static com.mmacedoaraujo.supportportal.constant.SecurityConstant.JWT_TOKEN_HEADER;
 import static org.springframework.http.HttpStatus.OK;
 import static org.springframework.http.MediaType.IMAGE_JPEG_VALUE;
@@ -140,8 +142,22 @@ public class UserResource extends ExceptionHandling {
     }
 
     @GetMapping(path = "/image/{username}/{filename}", produces = IMAGE_JPEG_VALUE)
-    public byte[] getProfileImage(@PathVariable("username") String username, @PathVariable("fileName") String fileName) {
-        return Files.readAllBytes(Paths.get(USER_FOLDER + username + FORWARD_SLASH + fileName))
+    public byte[] getProfileImage(@PathVariable("username") String username, @PathVariable("fileName") String fileName) throws IOException {
+        return Files.readAllBytes(Paths.get(USER_FOLDER + username + FORWARD_SLASH + fileName));
+    }
+
+    @GetMapping(path = "/image/{profile}/{username}", produces = IMAGE_JPEG_VALUE)
+    public byte[] getTemporaryProfileImage(@PathVariable("username") String username) throws IOException {
+        URL temporaryProfileImageUrl = new URL(TEMP_PROFILE_IMAGE_FIRST_PART_URL + username + TEMP_PROFILE_IMAGE_SECOND_PART_URL);
+        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+        try (InputStream inputStream = temporaryProfileImageUrl.openStream()) {
+            int bytesRead;
+            byte[] chunk = new byte[1024];
+            while ((bytesRead = inputStream.read(chunk)) > 0) {
+                byteArrayOutputStream.write(chunk, 0, bytesRead);
+            }
+        }
+        return byteArrayOutputStream.toByteArray();
     }
 
     private ResponseEntity<HttpResponse> response(HttpStatus httpStatus, String message) {
