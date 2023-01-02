@@ -21,9 +21,9 @@ public interface UserService {
 
     User findByEmail(String email);
 
-    User addNewUser(String firstName, String lastName, String username, String email, String role, boolean isNonLocked, boolean isActive, MultipartFile profileImage) throws Exception;
+    User addNewUser(String firstName, String lastName, String username, String email, String role, boolean isNonLocked, boolean isEnabled, MultipartFile profileImage) throws Exception;
 
-    User updateUser(String currentUsername, String newFirstName, String newLastName, String username, String newEmail, String role, boolean isNonLocked, boolean isActive, MultipartFile profileImage) throws Exception;
+    User updateUser(String currentUsername, String newFirstName, String newLastName, String newUsername, String newEmail, String role, boolean isNonLocked, boolean isEnabled, MultipartFile profileImage) throws Exception;
 
     void deleteUser(Long id);
 

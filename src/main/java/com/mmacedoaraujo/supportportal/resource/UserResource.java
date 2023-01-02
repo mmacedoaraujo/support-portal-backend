@@ -32,8 +32,7 @@ import java.nio.file.Paths;
 import java.util.Date;
 import java.util.List;
 
-import static com.mmacedoaraujo.supportportal.constant.FileConstant.FORWARD_SLASH;
-import static com.mmacedoaraujo.supportportal.constant.FileConstant.USER_FOLDER;
+import static com.mmacedoaraujo.supportportal.constant.FileConstant.*;
 import static com.mmacedoaraujo.supportportal.constant.SecurityConstant.JWT_TOKEN_HEADER;
 import static org.springframework.http.HttpStatus.OK;
 import static org.springframework.http.MediaType.IMAGE_JPEG_VALUE;
@@ -146,9 +145,9 @@ public class UserResource extends ExceptionHandling {
 
     }
 
-    @GetMapping(path = "/image/{username}/{fileName}", produces = IMAGE_JPEG_VALUE)
+    @GetMapping(path = "/image/{username}/{filename}", produces = IMAGE_JPEG_VALUE)
     public byte[] getProfileImage(@PathVariable("username") String username, @PathVariable("fileName") String fileName) throws IOException {
-        return Files.readAllBytes(Paths.get(USER_FOLDER + username + FORWARD_SLASH + fileName));
+        return Files.readAllBytes(Paths.get(USER_FOLDER + username + FORWARD_SLASH + fileName + DOT + JPEG_EXTENSION));
     }
 
     @GetMapping(path = "/image/profile/{username}", produces = IMAGE_JPEG_VALUE)
