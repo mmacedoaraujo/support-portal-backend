@@ -21,17 +21,21 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.imageio.ImageIO;
 import javax.mail.MessagingException;
+import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.net.URLConnection;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Date;
 import java.util.List;
 
-import static com.mmacedoaraujo.supportportal.constant.FileConstant.*;
+import static com.mmacedoaraujo.supportportal.constant.FileConstant.FORWARD_SLASH;
+import static com.mmacedoaraujo.supportportal.constant.FileConstant.USER_FOLDER;
 import static com.mmacedoaraujo.supportportal.constant.SecurityConstant.JWT_TOKEN_HEADER;
 import static org.springframework.http.HttpStatus.OK;
 import static org.springframework.http.MediaType.IMAGE_JPEG_VALUE;
@@ -146,18 +150,21 @@ public class UserResource extends ExceptionHandling {
         return Files.readAllBytes(Paths.get(USER_FOLDER + username + FORWARD_SLASH + fileName));
     }
 
-    @GetMapping(path = "/image/{profile}/{username}", produces = IMAGE_JPEG_VALUE)
+    @GetMapping(path = "/image/profile/{username}", produces = IMAGE_JPEG_VALUE)
     public byte[] getTemporaryProfileImage(@PathVariable("username") String username) throws IOException {
-        URL temporaryProfileImageUrl = new URL(TEMP_PROFILE_IMAGE_FIRST_PART_URL + username + TEMP_PROFILE_IMAGE_SECOND_PART_URL);
-        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-        try (InputStream inputStream = temporaryProfileImageUrl.openStream()) {
-            int bytesRead;
-            byte[] chunk = new byte[1024];
-            while ((bytesRead = inputStream.read(chunk)) > 0) {
-                byteArrayOutputStream.write(chunk, 0, bytesRead);
+        URL url = new URL("https://avatars.dicebear.com/api/micah/:" + username + ".jpg");
+        ByteArrayOutputStream output = new ByteArrayOutputStream();
+        URLConnection conn = url.openConnection();
+        conn.setRequestProperty("User-Agent", "Firefox");
+
+        try (InputStream inputStream = conn.getInputStream()) {
+            int n = 0;
+            byte[] buffer = new byte[1024];
+            while (-1 != (n = inputStream.read(buffer))) {
+                output.write(buffer, 0, n);
             }
         }
-        return byteArrayOutputStream.toByteArray();
+        return output.toByteArray();
     }
 
     private ResponseEntity<HttpResponse> response(HttpStatus httpStatus, String message) {
