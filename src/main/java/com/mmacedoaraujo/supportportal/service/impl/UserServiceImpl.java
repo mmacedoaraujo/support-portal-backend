@@ -98,15 +98,16 @@ public class UserServiceImpl implements UserService, UserDetailsService {
     }
 
     @Override
-    public User addNewUser(String firstName, String lastName, String username, String email, String role, boolean isNonLocked, boolean isActive, MultipartFile profileImage) throws UserNotFoundException, EmailExistException, UsernameExistException, IOException {
+    public User addNewUser(String firstName, String lastName, String username, String email, String role, boolean isNonLocked, boolean isActive, MultipartFile profileImage) throws Exception {
         validateNewUsernameAndEmail(EMPTY, username, email);
+        String password = generatePassword();
         User user = User.builder().userId(generateUserId())
                 .firstName(firstName)
                 .lastName(lastName)
                 .username(username)
                 .email(email)
                 .joinDate(new Date())
-                .password(encodePassword(generatePassword()))
+                .password(encodePassword(password))
                 .isEnabled(true)
                 .isNonLocked(true)
                 .role(getRoleEnumName(role).name())
@@ -114,14 +115,16 @@ public class UserServiceImpl implements UserService, UserDetailsService {
                 .profileImageUrl(getTemporaryProfileImageUrl(username))
                 .build();
 
+
         userRepository.save(user);
+        emailService.sendNewPasswordEmail(firstName, password, email);
         saveProfileImage(user, profileImage);
         return user;
     }
 
 
     @Override
-    public User updateUser(String currentUsername, String newFirstName, String newLastName, String username, String newEmail, String role, boolean isNonLocked, boolean isActive, MultipartFile profileImage) throws UserNotFoundException, EmailExistException, UsernameExistException, IOException {
+    public User updateUser(String currentUsername, String newFirstName, String newLastName, String username, String newEmail, String role, boolean isNonLocked, boolean isActive, MultipartFile profileImage) throws Exception {
         User currentUser = validateNewUsernameAndEmail(currentUsername, username, newEmail);
         currentUser = User.builder()
                 .firstName(newFirstName)
@@ -159,7 +162,7 @@ public class UserServiceImpl implements UserService, UserDetailsService {
     }
 
     @Override
-    public User updateProfileImage(String username, MultipartFile profileImage) throws UserNotFoundException, EmailExistException, UsernameExistException, IOException {
+    public User updateProfileImage(String username, MultipartFile profileImage) throws Exception {
         User user = validateNewUsernameAndEmail(username, null, null);
         saveProfileImage(user, profileImage);
         return user;

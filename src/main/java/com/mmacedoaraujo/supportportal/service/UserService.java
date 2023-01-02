@@ -21,13 +21,13 @@ public interface UserService {
 
     User findByEmail(String email);
 
-    User addNewUser(String firstName, String lastName, String username, String email, String role, boolean isNonLocked, boolean isActive, MultipartFile profileImage) throws UserNotFoundException, EmailExistException, UsernameExistException, IOException;
+    User addNewUser(String firstName, String lastName, String username, String email, String role, boolean isNonLocked, boolean isActive, MultipartFile profileImage) throws Exception;
 
-    User updateUser(String currentUsername, String newFirstName, String newLastName, String username, String newEmail, String role, boolean isNonLocked, boolean isActive, MultipartFile profileImage) throws UserNotFoundException, EmailExistException, UsernameExistException, IOException;
+    User updateUser(String currentUsername, String newFirstName, String newLastName, String username, String newEmail, String role, boolean isNonLocked, boolean isActive, MultipartFile profileImage) throws Exception;
 
     void deleteUser(Long id);
 
     void resetPassword(String email) throws EmailNotFoundException, MessagingException;
 
-    User updateProfileImage(String username, MultipartFile profileImage) throws UserNotFoundException, EmailExistException, UsernameExistException, IOException;
+    User updateProfileImage(String username, MultipartFile profileImage) throws Exception;
 }

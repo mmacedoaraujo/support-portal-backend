@@ -21,9 +21,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.imageio.ImageIO;
 import javax.mail.MessagingException;
-import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -69,7 +67,6 @@ public class UserResource extends ExceptionHandling {
     }
 
     @PostMapping("/add")
-    @PreAuthorize("hasAuthority('user:create')")
     public ResponseEntity<User> addNewUser(
             @RequestParam("firstName") String firstName,
             @RequestParam("lastName") String lastName,
@@ -79,7 +76,7 @@ public class UserResource extends ExceptionHandling {
             @RequestParam("isEnabled") String isEnabled,
             @RequestParam("isNonLocked") String isNonLocked,
             @RequestParam(value = "profileImage", required = false) MultipartFile profileImage)
-            throws UserNotFoundException, EmailExistException, IOException, UsernameExistException {
+            throws Exception {
 
         User newUser = userService.addNewUser(firstName, lastName, username, email, role,
                 Boolean.parseBoolean(isNonLocked), Boolean.parseBoolean(isEnabled), profileImage);
@@ -89,6 +86,7 @@ public class UserResource extends ExceptionHandling {
     }
 
     @PostMapping("/update")
+    @PreAuthorize("hasAuthority('user:update')")
     public ResponseEntity<User> update(
             @RequestParam("currentUsername") String currentUsername,
             @RequestParam("firstName") String firstName,
@@ -99,7 +97,7 @@ public class UserResource extends ExceptionHandling {
             @RequestParam("isEnabled") String isEnabled,
             @RequestParam("isNonLocked") String isNonLocked,
             @RequestParam(value = "profileImage", required = false) MultipartFile profileImage)
-            throws UserNotFoundException, EmailExistException, IOException, UsernameExistException {
+            throws Exception {
 
         User updatedUser = userService.updateUser(currentUsername, firstName, lastName, username, email, role,
                 Boolean.parseBoolean(isNonLocked), Boolean.parseBoolean(isEnabled), profileImage);
@@ -109,6 +107,7 @@ public class UserResource extends ExceptionHandling {
     }
 
     @GetMapping("/find/{username}")
+    @PreAuthorize("hasAuthority('user:read')")
     public ResponseEntity<User> findByUsername(@PathVariable("username") String username) {
         User userFoundbyUsername = userService.findByUsername(username);
 
@@ -140,14 +139,14 @@ public class UserResource extends ExceptionHandling {
     public ResponseEntity<User> updatePorfileImage(
             @RequestParam("username") String username,
             @RequestParam(value = "profileImage") MultipartFile profileImage)
-            throws UserNotFoundException, EmailExistException, IOException, UsernameExistException {
+            throws Exception {
 
         User user = userService.updateProfileImage(username, profileImage);
         return new ResponseEntity<>(user, HttpStatus.NO_CONTENT);
 
     }
 
-    @GetMapping(path = "/image/{username}/{filename}", produces = IMAGE_JPEG_VALUE)
+    @GetMapping(path = "/image/{username}/{fileName}", produces = IMAGE_JPEG_VALUE)
     public byte[] getProfileImage(@PathVariable("username") String username, @PathVariable("fileName") String fileName) throws IOException {
         return Files.readAllBytes(Paths.get(USER_FOLDER + username + FORWARD_SLASH + fileName));
     }
