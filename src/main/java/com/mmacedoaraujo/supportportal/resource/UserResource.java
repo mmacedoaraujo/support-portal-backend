@@ -69,6 +69,7 @@ public class UserResource extends ExceptionHandling {
     }
 
     @PostMapping("/add")
+    @PreAuthorize("hasAuthority('user:create')")
     public ResponseEntity<User> addNewUser(
             @RequestParam("firstName") String firstName,
             @RequestParam("lastName") String lastName,
@@ -115,6 +116,7 @@ public class UserResource extends ExceptionHandling {
     }
 
     @GetMapping("/list")
+    @PreAuthorize("hasAuthority('user:read')")
     public ResponseEntity<List<User>> getAllUsers() {
         List<User> usersList = userService.getUsers();
         return new ResponseEntity<>(usersList, OK);
