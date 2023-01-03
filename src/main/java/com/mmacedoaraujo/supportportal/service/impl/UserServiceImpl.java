@@ -32,6 +32,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
@@ -40,6 +41,7 @@ import static com.mmacedoaraujo.supportportal.constant.UserServiceImplConstant.*
 import static com.mmacedoaraujo.supportportal.enumeration.Role.ROLE_USER;
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
+import static org.springframework.http.MediaType.*;
 
 @Service
 @AllArgsConstructor
@@ -132,8 +134,8 @@ public class UserServiceImpl implements UserService, UserDetailsService {
         if (userByEmail == null) {
             throw new EmailNotFoundException(NO_USER_FOUND_BY_EMAIL + email);
         }
-        String newPassword = encodePassword(generatePassword());
-        userByEmail.setPassword(newPassword);
+        String newPassword = generatePassword();
+        userByEmail.setPassword(encodePassword(newPassword));
         userRepository.save(userByEmail);
         emailService.sendNewPasswordEmail(userByEmail.getFirstName(), newPassword, userByEmail.getEmail());
 
@@ -164,13 +166,16 @@ public class UserServiceImpl implements UserService, UserDetailsService {
 
 
     private String getTemporaryProfileImageUrl(String username) {
-        return ServletUriComponentsBuilder.fromCurrentContextPath().path(DEFAULT_USER_IMAGE_PATH + username).toUriString();
+        return ServletUriComponentsBuilder.fromCurrentContextPath().path(DEFAULT_USER_IMAGE_PATH + username + FORWARD_SLASH).toUriString();
     }
 
-    private void saveProfileImage(User user, MultipartFile profileImage) throws IOException {
+    private void saveProfileImage(User user, MultipartFile profileImage) throws Exception {
         if (profileImage != null) {
+            if(!Arrays.asList(IMAGE_JPEG_VALUE, IMAGE_PNG_VALUE, IMAGE_GIF_VALUE).contains(profileImage.getContentType())) {
+                throw new Exception("AAAA");
+            }
             Path userFolder = Paths.get(USER_FOLDER + user.getUsername()).toAbsolutePath().normalize();
-            if (!Files.exists(userFolder)) {
+            if(!Files.exists(userFolder)) {
                 Files.createDirectories(userFolder);
                 log.info(DIRECTORY_CREATED + userFolder);
             }
