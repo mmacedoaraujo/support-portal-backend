@@ -7,8 +7,8 @@ import org.springframework.stereotype.Component;
 
 @Generated(
     value = "org.mapstruct.ap.MappingProcessor",
-    date = "2023-01-19T13:18:58-0300",
-    comments = "version: 1.5.3.Final, compiler: javac, environment: Java 1.8.0_352 (Azul Systems, Inc.)"
+    date = "2023-01-22T20:18:03-0300",
+    comments = "version: 1.4.2.Final, compiler: javac, environment: Java 1.8.0_352 (Azul Systems, Inc.)"
 )
 @Component
 public class UserMapperImpl implements UserMapper {
@@ -16,7 +16,7 @@ public class UserMapperImpl implements UserMapper {
     @Override
     public User updateUser(User user, User userToUpdate) {
         if ( user == null ) {
-            return userToUpdate;
+            return null;
         }
 
         if ( user.getId() != null ) {
